@@ -28,8 +28,7 @@ int main()
             for (int32_t j = -SIZE; j < SIZE; ++j) {
                 float   len        = (i * i + j * j) * len_ratio;
                 int32_t pz         = (int32_t)((std::sin(len * 10.0 + time) * 0.5 + 0.5) * (std::abs(50.0f - 25.0f * len)) * Z_SCALE);
-                int32_t cube_color = (int32_t)(len * 100.0) % 255 + 1;
-                vdb.AddVoxel(i + OFFSET, j + OFFSET, pz, cube_color);  // magicavoxel use the z as up axis
+                vdb.addVoxelDensity(i + OFFSET, j + OFFSET, pz, 1.0f);  // magicavoxel use the z as up axis
             }
         }
         time += 0.5f;
@@ -40,106 +39,7 @@ int main()
 }
 ```
 
-possible console print ( vox.PrintStats() ) : 
+### Output in blender3D :
 
-```cpp
----- Stats ------------------------------
-Volume : 377 x 377 x 49
-count cubes : 9
-count key frames : 30
------------------------------------------
- o--\-> key frame : 0
-     \-> voxels count : 142884
-      \-> elapsed time : 0.045 secs
- o--\-> key frame : 1
-     \-> voxels count : 142884
-      \-> elapsed time : 0.046 secs
- o--\-> key frame : 2
-     \-> voxels count : 142884
-      \-> elapsed time : 0.046 secs
- o--\-> key frame : 3
-     \-> voxels count : 142884
-      \-> elapsed time : 0.047 secs
- o--\-> key frame : 4
-     \-> voxels count : 142884
-      \-> elapsed time : 0.047 secs
- o--\-> key frame : 5
-     \-> voxels count : 142884
-      \-> elapsed time : 0.048 secs
- o--\-> key frame : 6
-     \-> voxels count : 142884
-      \-> elapsed time : 0.048 secs
- o--\-> key frame : 7
-     \-> voxels count : 142884
-      \-> elapsed time : 0.047 secs
- o--\-> key frame : 8
-     \-> voxels count : 142884
-      \-> elapsed time : 0.048 secs
- o--\-> key frame : 9
-     \-> voxels count : 142884
-      \-> elapsed time : 0.048 secs
- o--\-> key frame : 10
-     \-> voxels count : 142884
-      \-> elapsed time : 0.048 secs
- o--\-> key frame : 11
-     \-> voxels count : 142884
-      \-> elapsed time : 0.047 secs
- o--\-> key frame : 12
-     \-> voxels count : 142884
-      \-> elapsed time : 0.047 secs
- o--\-> key frame : 13
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 14
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 15
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 16
-     \-> voxels count : 142884
-      \-> elapsed time : 0.05 secs
- o--\-> key frame : 17
-     \-> voxels count : 142884
-      \-> elapsed time : 0.048 secs
- o--\-> key frame : 18
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 19
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 20
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 21
-     \-> voxels count : 142884
-      \-> elapsed time : 0.05 secs
- o--\-> key frame : 22
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 23
-     \-> voxels count : 142884
-      \-> elapsed time : 0.05 secs
- o--\-> key frame : 24
-     \-> voxels count : 142884
-      \-> elapsed time : 0.049 secs
- o--\-> key frame : 25
-     \-> voxels count : 142884
-      \-> elapsed time : 0.05 secs
- o--\-> key frame : 26
-     \-> voxels count : 142884
-      \-> elapsed time : 0.05 secs
- o--\-> key frame : 27
-     \-> voxels count : 142884
-      \-> elapsed time : 0.051 secs
- o--\-> key frame : 28
-     \-> voxels count : 142884
-      \-> elapsed time : 0.051 secs
- o--\-> key frame : 29
-     \-> voxels count : 142884
-      \-> elapsed time : 0.051 secs
------------------------------------------
-voxels total : 4286520
-total elapsed time : 1.472 secs
------------------------------------------
-```
+![alt](https://github.com/aiekick/VdbWriter/blob/master/doc/wave_blender.jpg)
+![alt](https://github.com/aiekick/VdbWriter/blob/master/doc/julia_revolute_blender.jpg)
