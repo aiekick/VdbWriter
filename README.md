@@ -1,8 +1,8 @@
 # VdbWriter
 
-VdbWriter is a specficic and limited writer for openvdb.
+VdbWriter is a specific and limited writer for openvdb.
 
-He is absed on https://github.com/jangafx/simple-vdb-writer
+He is based on https://github.com/jangafx/simple-vdb-writer
  
 ## App
 
