@@ -79,11 +79,16 @@ void VdbWriter::saveToFile(const std::string& vFilePathName) {
     if (!vFilePathName.empty()) {
         auto dot_p = vFilePathName.find_last_of('.');
         if (dot_p != std::string::npos) {
-            auto   base_file_path_name = vFilePathName.substr(0, dot_p) + "_";
+            auto   base_file_path_name = vFilePathName.substr(0, dot_p);
             size_t idx                 = 1;
             for (auto& vdb : m_Vdbs) {
                 std::stringstream str;
-                str << base_file_path_name << std::setfill('0') << std::setw(4) << idx++ << ".vdb";
+                if (m_Vdbs.size() > 1) { // many frames
+                    str << base_file_path_name << "_" << std::setfill('0') << std::setw(4) << idx++ << ".vdb";
+                }
+                else {
+                    str << base_file_path_name << ".vdb";
+                }
                 if (m_OpenFileForWriting(str.str())) {
                     auto   center = maxVolume.GetCenter();
                     Mat4x4 mat_identity;
