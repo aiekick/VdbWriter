@@ -28,7 +28,7 @@ int main()
             for (int32_t j = -SIZE; j < SIZE; ++j) {
                 float   len        = (i * i + j * j) * len_ratio;
                 int32_t pz         = (int32_t)((std::sin(len * 10.0 + time) * 0.5 + 0.5) * (std::abs(50.0f - 25.0f * len)) * Z_SCALE);
-                vdb.addVoxelDensity(i + OFFSET, j + OFFSET, pz, 1.0f);  // magicavoxel use the z as up axis
+                vdb.addVoxelDensity(i + OFFSET, j + OFFSET, pz, 1.0f);  // blender3D use the z as up axis
             }
         }
         time += 0.5f;
