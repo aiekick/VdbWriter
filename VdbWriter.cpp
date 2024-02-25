@@ -54,7 +54,7 @@ uint32_t getBitIndex4(uint32_t x, uint32_t y, uint32_t z) {
     z &= (uint32_t)(4096 - 1);
     uint32_t idx_3d[3] = {x >> 7, y >> 7, z >> 7};
     uint64_t idx       = idx_3d[2] | (idx_3d[1] << 5) | (idx_3d[0] << 10);
-    return idx;
+    return (uint32_t)idx;
 }
 
 uint32_t getBitIndex3(uint32_t x, uint32_t y, uint32_t z) {
@@ -63,7 +63,7 @@ uint32_t getBitIndex3(uint32_t x, uint32_t y, uint32_t z) {
     z &= (uint32_t)(128 - 1);
     uint32_t idx_3d[3] = {x >> 3, y >> 3, z >> 3};
     uint64_t idx       = idx_3d[2] | (idx_3d[1] << 4) | (idx_3d[0] << 8);
-    return idx;
+    return (uint32_t)idx;
 }
 
 uint32_t getBitIndex0(uint32_t x, uint32_t y, uint32_t z) {
@@ -72,7 +72,7 @@ uint32_t getBitIndex0(uint32_t x, uint32_t y, uint32_t z) {
     z &= (uint32_t)(8 - 1);
     uint32_t idx_3d[3] = {x >> 0, y >> 0, z >> 0};
     uint64_t idx       = idx_3d[2] | (idx_3d[1] << 3) | (idx_3d[0] << 6);
-    return idx;
+    return (uint32_t)idx;
 }
 
 void VdbWriter::saveToFile(const std::string& vFilePathName) {
@@ -90,12 +90,13 @@ void VdbWriter::saveToFile(const std::string& vFilePathName) {
                     str << base_file_path_name << ".vdb";
                 }
                 if (m_OpenFileForWriting(str.str())) {
-                    auto   center = maxVolume.GetCenter();
+                    double scale  = 0.1;
+                    auto   center = maxVolume.GetCenter() * 0.0;
                     Mat4x4 mat_identity;
-                    mat_identity[0] = {1, 0, 0, -center.x};
-                    mat_identity[1] = {0, 1, 0, -center.y};
-                    mat_identity[2] = {0, 0, 1, -center.z};
-                    mat_identity[3] = {0, 0, 0, 1};
+                    mat_identity[0] = {scale, 0, 0, 0};
+                    mat_identity[1] = {0, scale, 0, 0};
+                    mat_identity[2] = {0, 0, scale, 0};
+                    mat_identity[3] = {-center.x, -center.y, -center.z, 1};
                     m_WriteVdb(m_File, &vdb.second, mat_identity);
                     m_CloseFile();
                 }
@@ -135,46 +136,20 @@ void VdbWriter::printStats() const {
     std::cout << "-----------------------------------------" << std::endl;
 }
 
-void VdbWriter::addVoxelDensity(const uint32_t& x, const uint32_t& y, const uint32_t& z, float value) {
+void VdbWriter::addLayer(const size_t& layer, const std::string layerName) { m_Labels[layer] = layerName; }
+
+void VdbWriter::addVoxelFloat(const uint32_t& x, const uint32_t& y, const uint32_t& z, float value, size_t layer) {
     maxVolume.Combine(dvec3((float)x, (float)y, (float)z));
     auto  bit_index_4 = getBitIndex4(x, y, z);
     auto  bit_index_3 = getBitIndex3(x, y, z);
     auto  bit_index_0 = getBitIndex0(x, y, z);
-    auto& nodes5Ref   = m_Vdbs[m_KeyFrame].nodes;
+    auto& nodes5Ref   = m_Vdbs[m_KeyFrame].nodes[layer];
     auto& nodes4Ref   = nodes5Ref.nodes[bit_index_4];
     auto& nodes3Ref   = nodes4Ref.nodes[bit_index_3];
     nodes5Ref.mask[bit_index_4 >> 6] |= static_cast<uint64_t>(1) << (bit_index_4 & (64 - 1));
     nodes4Ref.mask[bit_index_3 >> 6] |= static_cast<uint64_t>(1) << (bit_index_3 & (64 - 1));
     nodes3Ref.mask[bit_index_0 >> 6] |= static_cast<uint64_t>(1) << (bit_index_0 & (64 - 1));
     nodes3Ref.data[bit_index_0] = value;
-}
-
-void VdbWriter::addVoxelNormal(const uint32_t& x, const uint32_t& y, const uint32_t& z, fVec3 normal) { 
-    /*maxVolume.Combine(dvec3((float)x, (float)y, (float)z));
-    auto  bit_index_4 = getBitIndex4(x, y, z);
-    auto  bit_index_3 = getBitIndex3(x, y, z);
-    auto  bit_index_0 = getBitIndex0(x, y, z);
-    auto& nodes5Ref   = m_Vdb.nodes;
-    auto& nodes4Ref   = nodes5Ref.nodes[bit_index_4];
-    auto& nodes3Ref   = nodes4Ref.nodes[bit_index_3];
-    nodes5Ref.mask[bit_index_4 >> 6] |= static_cast<uint64_t>(1) << (bit_index_4 & (64 - 1));
-    nodes4Ref.mask[bit_index_3 >> 6] |= static_cast<uint64_t>(1) << (bit_index_3 & (64 - 1));
-    nodes3Ref.mask[bit_index_0 >> 6] |= static_cast<uint64_t>(1) << (bit_index_0 & (64 - 1));
-    nodes3Ref.data[bit_index_0] = value;*/ }
-
-void VdbWriter::addVoxelColor(const uint32_t& x, const uint32_t& y, const uint32_t& z, fVec4 color) { 
-    /*maxVolume.Combine(dvec3((float)x, (float)y, (float)z));
-    auto  bit_index_4 = getBitIndex4(x, y, z);
-    auto  bit_index_3 = getBitIndex3(x, y, z);
-    auto  bit_index_0 = getBitIndex0(x, y, z);
-    auto& nodes5Ref   = m_Vdb.nodes;
-    auto& nodes4Ref   = nodes5Ref.nodes[bit_index_4];
-    auto& nodes3Ref   = nodes4Ref.nodes[bit_index_3];
-    nodes5Ref.mask[bit_index_4 >> 6] |= static_cast<uint64_t>(1) << (bit_index_4 & (64 - 1));
-    nodes4Ref.mask[bit_index_3 >> 6] |= static_cast<uint64_t>(1) << (bit_index_3 & (64 - 1));
-    nodes3Ref.mask[bit_index_0 >> 6] |= static_cast<uint64_t>(1) << (bit_index_0 & (64 - 1));
-    nodes3Ref.data[bit_index_0] = value;*/
-
 }
 
 void VdbWriter::startTimeLogging() {
@@ -217,7 +192,7 @@ void VdbWriter::setKeyFrame(uint32_t vKeyFrame) {
 // Routines for writing the actual format
 void VdbWriter::m_WriteNode5Header(FILE* fp, const Node5& node) {
     // Origin of the 5-node
-    write_vec3i(fp, {0, 0, 0});    
+    write_vec3i(fp, {0, 0, 0});
     // Child masks
     write_data_arr<uint64_t>(fp, node.mask, 512);
     // Value masks are zero for now
@@ -251,7 +226,7 @@ int count_trailing_zeros(T value) {
     return count;
 }
 
-void VdbWriter::m_WriteTree(FILE* fp, VDB* vdb) {
+void VdbWriter::m_WriteTree(FILE* fp, VDB* vdb, size_t layer) {
     // We need to write a 1, apparently
     write_data<uint32_t>(fp, 1);
     // Root node background value
@@ -260,7 +235,7 @@ void VdbWriter::m_WriteTree(FILE* fp, VDB* vdb) {
     write_data<uint32_t>(fp, 0);
     // Number of 5-nodes
     write_data<uint32_t>(fp, 1);
-    const auto& nodes5Ref = vdb->nodes;
+    const auto& nodes5Ref = vdb->nodes[layer];
     m_WriteNode5Header(fp, nodes5Ref);
     // Iterate 4-nodes
     size_t word5_idx = 0;
@@ -306,12 +281,14 @@ void VdbWriter::m_WriteTree(FILE* fp, VDB* vdb) {
     }
 }
 
-void VdbWriter::m_WriteMetadata(FILE* fp) {
+void VdbWriter::m_WriteMetadata(FILE* fp, const std::string& layerName) {
     // Number of entries
-    write_data<uint32_t>(fp, 3);
+    write_data<uint32_t>(fp, 5);
     write_meta_string(fp, "class", "unknown");
     write_meta_string(fp, "file_compression", "none");
-    write_meta_string(fp, "name", "density");
+    write_meta_vec3i(fp, "file_bbox_max", {(int32_t)maxVolume.upperBound.x, (int32_t)maxVolume.upperBound.y, (int32_t)maxVolume.upperBound.z});
+    write_meta_vec3i(fp, "file_bbox_min", {(int32_t)maxVolume.lowerBound.x, (int32_t)maxVolume.lowerBound.y, (int32_t)maxVolume.lowerBound.z});
+    write_meta_string(fp, "name", layerName);
 }
 
 void VdbWriter::m_WriteTransform(FILE* fp, Mat4x4 mat) {
@@ -324,9 +301,9 @@ void VdbWriter::m_WriteTransform(FILE* fp, Mat4x4 mat) {
     }
 }
 
-void VdbWriter::m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat) {
+void VdbWriter::m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat, size_t layer, const std::string& layerName) {
     // Grid name
-    write_name(fp, "density");
+    write_name(fp, layerName);
     // Grid type
     write_name(fp, "Tree_float_5_4_3");
     // No instance parent
@@ -338,9 +315,9 @@ void VdbWriter::m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat) {
     write_data<uint64_t>(fp, 0);
     // No compression
     write_data<uint32_t>(fp, 0);
-    m_WriteMetadata(fp);
+    m_WriteMetadata(fp, layerName);
     m_WriteTransform(fp, mat);
-    m_WriteTree(fp, vdb);
+    m_WriteTree(fp, vdb, layer);
 }
 
 void VdbWriter::m_WriteVdb(FILE* fp, VDB* vdb, Mat4x4 mat) {
@@ -359,8 +336,10 @@ void VdbWriter::m_WriteVdb(FILE* fp, VDB* vdb, Mat4x4 mat) {
     // No metadata for now
     write_data<uint32_t>(fp, 0);
     // One grid
-    write_data<uint32_t>(fp, 1);
-    m_WriteGrid(fp, vdb, mat);
+    write_data<uint32_t>(fp, (uint32_t)m_Labels.size());
+    for (const auto& label : m_Labels) {
+        m_WriteGrid(fp, vdb, mat, label.first, label.second);
+    }
 }
 
 bool VdbWriter::m_OpenFileForWriting(const std::string& vFilePathName) {

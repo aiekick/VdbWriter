@@ -221,7 +221,7 @@ struct Node5 {
 };
 
 struct VDB {
-    Node5 nodes;
+    std::map<size_t, Node5> nodes;
 };
 
 typedef std::array<float, 3> fVec3;
@@ -241,6 +241,8 @@ private:
     int32_t lastError = 0;
     Volume  maxVolume = Volume(1e7, -1e7);
     KeyFrame m_KeyFrame = 0;
+    
+    std::map<size_t, std::string> m_Labels;
 
     bool m_TimeLoggingEnabled = false;  // for log elapsed time between key frames and total
 
@@ -252,9 +254,8 @@ private:
     KeyFrameTimeLoggingFunctor m_KeyFrameTimeLoggingFunctor;
 
 public:
-    void addVoxelDensity(const uint32_t& x, const uint32_t& y, const uint32_t& z, float value);
-    void addVoxelNormal(const uint32_t& x, const uint32_t& y, const uint32_t& z, fVec3 normal);
-    void addVoxelColor(const uint32_t& x, const uint32_t& y, const uint32_t& z, fVec4 color);
+    void addLayer(const size_t& layer, const std::string layerName);
+    void addVoxelFloat(const uint32_t& x, const uint32_t& y, const uint32_t& z, float value, size_t layer);
     void startTimeLogging();
     void stopTimeLogging();
     void setKeyFrameTimeLoggingFunctor(const KeyFrameTimeLoggingFunctor& vKeyFrameTimeLoggingFunctor);
@@ -265,10 +266,10 @@ public:
 private:
     void m_WriteNode5Header(FILE* fp, const Node5& node);
     void m_WriteNode4Header(FILE* fp, const Node4& node);
-    void m_WriteTree(FILE* fp, VDB* vdb);
-    void m_WriteMetadata(FILE* fp);
+    void m_WriteTree(FILE* fp, VDB* vdb, size_t layer);
+    void m_WriteMetadata(FILE* fp, const std::string& layerName);
     void m_WriteTransform(FILE* fp, Mat4x4 mat);
-    void m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat);
+    void m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat, size_t layer, const std::string& layerName);
     void m_WriteVdb(FILE* fp, VDB* vdb, Mat4x4 mat);
     bool m_OpenFileForWriting(const std::string& vFilePathName);
     void m_CloseFile();
