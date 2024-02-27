@@ -3,8 +3,8 @@
 #include <chrono>    // std::chrono
 #include <iostream>  // std::cout
 
-#define USE_ANIMATED_WAVE
-//#define JULIA_REVOLUTE
+//#define USE_ANIMATED_WAVE
+#define JULIA_REVOLUTE
 //#define USE_VDB_WRITER
 
 #ifdef JULIA_REVOLUTE
@@ -14,7 +14,7 @@ int           main() {
     const double  ZOOM_XZ    = 7.5;
     const double  ZOOM_Y     = 7.5;
     const int32_t ITERATIONS = 5;
-    const int32_t FRAMES     = 1;
+    const int32_t FRAMES     = 30;
 
     double time = 0.0f;
     double kk, hh, px, pz, an, cx, cy, path, rev_x, rev_y, tmp_x, tmp_y, rev_x_squared, rev_y_squared, df;
@@ -24,7 +24,7 @@ int           main() {
     bool                   first_offset = true;
     vdb::VdbWriter vdb;
     vdb.addLayer(0, "density");
-    vdb.addLayer(1, "temperature");
+    vdb.addLayer(1, "sdf");
     vdb.setKeyFrameTimeLoggingFunctor([=](const vdb::KeyFrame& vKeyFrame, const double& vValue) {  //
         std::cout << "Elapsed time for Frame " << vKeyFrame << "/" << FRAMES << " : " << vValue << " secs " << std::endl;
     });
@@ -64,8 +64,8 @@ int           main() {
                         rev_y = 2.0 * rev_x * rev_y + cy;
                         rev_x = rev_x_squared - rev_y_squared + cx;
                     }
-                    df = sqrt(kk / hh) * std::log10(kk);
-                    if (std::abs(df) - 0.01 < 0.0) {
+                    df = std::abs(sqrt(kk / hh) * std::log10(kk)) - 0.01;
+                    if (df < 0.0) {
                         if (first_offset) {
                             first_offset = false;
                             offset[0]    = i;
@@ -73,8 +73,8 @@ int           main() {
                             offset[2]    = j;
                         }
                         cube_color = (int32_t)((std::sin(rev_x + rev_y) * 0.5 + 0.5) * 6.0) + 249;
-                        vdb.addVoxelDensity(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], 1.0f, 0);
-                        vdb.addVoxelDensity(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], (std::sin(rev_x + rev_y) * 0.5 + 0.5) * 5000.0f, 1);
+                        vdb.addVoxelFloat(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], 1.0f, 0);
+                        vdb.addVoxelFloat(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], (float)df, 1);
                     }
                 }
             }
@@ -139,7 +139,7 @@ int main() {
                 const auto& pz             = z - R;
                 const auto& length_squared = px * px + py * py + pz * pz;
                 if (length_squared < R * R) {
-                    vdb.addVoxelDensity(x, y, z, 1.0f);
+                    vdb.addVoxelFloat(x, y, z, 1.0f);
                     float fx = (float)px;
                     float fy = (float)py;
                     float fz = (float)pz;
@@ -147,8 +147,6 @@ int main() {
                     fx /= len;
                     fy /= len;
                     fz /= len;
-                    vdb.addVoxelNormal(x, y, z, {fx, fy, fz});
-                    vdb.addVoxelColor(x, y, z, {0.8, 0.5, 0.2, 1.0});
                 }
             }
         }
