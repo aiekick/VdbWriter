@@ -3,8 +3,8 @@
 #include <chrono>    // std::chrono
 #include <iostream>  // std::cout
 
-//#define USE_ANIMATED_WAVE
-#define JULIA_REVOLUTE
+#define USE_ANIMATED_WAVE
+//#define JULIA_REVOLUTE
 //#define USE_VDB_WRITER
 
 #ifdef JULIA_REVOLUTE
