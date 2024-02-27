@@ -268,9 +268,9 @@ private:
     void m_WriteNode4Header(FILE* fp, const Node4& node);
     void m_WriteTree(FILE* fp, VDB* vdb, size_t layer);
     void m_WriteMetadata(FILE* fp, const std::string& layerName);
-    void m_WriteTransform(FILE* fp, Mat4x4 mat);
-    void m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat, size_t layer, const std::string& layerName);
-    void m_WriteVdb(FILE* fp, VDB* vdb, Mat4x4 mat);
+    void m_WriteTransform(FILE* fp);
+    void m_WriteGrid(FILE* fp, VDB* vdb, size_t layer, const std::string& layerName);
+    void m_WriteVdb(FILE* fp, VDB* vdb);
     bool m_OpenFileForWriting(const std::string& vFilePathName);
     void m_CloseFile();
     long m_GetFilePos() const;

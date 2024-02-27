@@ -90,14 +90,7 @@ void VdbWriter::saveToFile(const std::string& vFilePathName) {
                     str << base_file_path_name << ".vdb";
                 }
                 if (m_OpenFileForWriting(str.str())) {
-                    double scale  = 0.1;
-                    auto   center = maxVolume.GetCenter() * 0.0;
-                    Mat4x4 mat_identity;
-                    mat_identity[0] = {scale, 0, 0, 0};
-                    mat_identity[1] = {0, scale, 0, 0};
-                    mat_identity[2] = {0, 0, scale, 0};
-                    mat_identity[3] = {-center.x, -center.y, -center.z, 1};
-                    m_WriteVdb(m_File, &vdb.second, mat_identity);
+                    m_WriteVdb(m_File, &vdb.second);
                     m_CloseFile();
                 }
             }
@@ -291,17 +284,44 @@ void VdbWriter::m_WriteMetadata(FILE* fp, const std::string& layerName) {
     write_meta_string(fp, "name", layerName);
 }
 
-void VdbWriter::m_WriteTransform(FILE* fp, Mat4x4 mat) {
-    write_name(fp, "AffineMap");
+void VdbWriter::m_WriteTransform(FILE* fp) {
+    write_name(fp, "UniformScaleTranslateMap");
+    // write Translation
+    const auto& center = maxVolume.GetCenter();
+    write_data<double>(fp, -center.x);
+    write_data<double>(fp, -center.y);
+    write_data<double>(fp, -center.z);
+    // write ScaleValues
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    // write VoxelSize
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    // write ScaleValuesInverse
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    // write InvScaleSqr
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    write_data<double>(fp, 1.0);
+    // write InvTwiceScale;
+    write_data<double>(fp, 0.5);
+    write_data<double>(fp, 0.5);
+    write_data<double>(fp, 0.5);
+
+    /*write_name(fp, "AffineMap");
     //write_data_arr<double>(fp, &mat[0][0], 16);
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
             write_data<double>(fp, mat[i][j]);
         }
-    }
+    }*/
 }
 
-void VdbWriter::m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat, size_t layer, const std::string& layerName) {
+void VdbWriter::m_WriteGrid(FILE* fp, VDB* vdb, size_t layer, const std::string& layerName) {
     // Grid name
     write_name(fp, layerName);
     // Grid type
@@ -316,11 +336,11 @@ void VdbWriter::m_WriteGrid(FILE* fp, VDB* vdb, Mat4x4 mat, size_t layer, const 
     // No compression
     write_data<uint32_t>(fp, 0);
     m_WriteMetadata(fp, layerName);
-    m_WriteTransform(fp, mat);
+    m_WriteTransform(fp);
     m_WriteTree(fp, vdb, layer);
 }
 
-void VdbWriter::m_WriteVdb(FILE* fp, VDB* vdb, Mat4x4 mat) {
+void VdbWriter::m_WriteVdb(FILE* fp, VDB* vdb) {
     // Magic number
     std::array<uint8_t, 8> header = {0x20, 0x42, 0x44, 0x56, 0x0, 0x0, 0x0, 0x0};
     write_ptr(fp, header.data(), sizeof(uint8_t), header.size());
@@ -338,7 +358,7 @@ void VdbWriter::m_WriteVdb(FILE* fp, VDB* vdb, Mat4x4 mat) {
     // One grid
     write_data<uint32_t>(fp, (uint32_t)m_Labels.size());
     for (const auto& label : m_Labels) {
-        m_WriteGrid(fp, vdb, mat, label.first, label.second);
+        m_WriteGrid(fp, vdb, label.first, label.second);
     }
 }
 
