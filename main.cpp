@@ -1,10 +1,10 @@
-#include "VdbWriter.h"
+#include "VDBWriter.hpp"
 #include <cstdint>   // int32_t
 #include <chrono>    // std::chrono
 #include <iostream>  // std::cout
 
-#define USE_ANIMATED_WAVE
-//#define JULIA_REVOLUTE
+#define JULIA_REVOLUTE
+//#define USE_ANIMATED_WAVE
 //#define USE_VDB_WRITER
 
 #ifdef JULIA_REVOLUTE
@@ -14,25 +14,21 @@ int           main() {
     const double  ZOOM_XZ    = 7.5;
     const double  ZOOM_Y     = 7.5;
     const int32_t ITERATIONS = 5;
-    const int32_t FRAMES     = 30;
+    const int32_t FRAMES     = 10;
 
     double time = 0.0f;
     double kk, hh, px, pz, an, cx, cy, path, rev_x, rev_y, tmp_x, tmp_y, rev_x_squared, rev_y_squared, df;
     double rot2D[4] = {1, 0, 0, 1};  // c,-s,s,c for t=0
 
-    std::array<int32_t, 3> offset = {};
+    std::array<int32_t, 3> offset       = {};
     bool                   first_offset = true;
-    vdb::VdbWriter vdb;
-    vdb.addLayer(0, "density");
-    vdb.addLayer(1, "sdf");
-    vdb.setKeyFrameTimeLoggingFunctor([=](const vdb::KeyFrame& vKeyFrame, const double& vValue) {  //
-        std::cout << "Elapsed time for Frame " << vKeyFrame << "/" << FRAMES << " : " << vValue << " secs " << std::endl;
-    });
-    vdb.startTimeLogging();
+    vdb::VDBWriter         vdb;
     int32_t cube_color;
     double  time_step = 6.28318 / (double)FRAMES;
     for (int32_t f = 0; f < FRAMES; ++f) {
         vdb.setKeyFrame(f);
+        auto* densityLayerPtr = vdb.getFloatLayer(0, "density");
+        auto* sdfLayerPtr     = vdb.getDoubleLayer(1, "sdf");
         time += time_step;
         for (int32_t i = -SIZE; i < SIZE; ++i) {
             px = ((double)i * 2.0 / (double)SIZE - 1.0) * ZOOM_XZ;
@@ -73,16 +69,14 @@ int           main() {
                             offset[2]    = j;
                         }
                         cube_color = (int32_t)((std::sin(rev_x + rev_y) * 0.5 + 0.5) * 6.0) + 249;
-                        vdb.addVoxelFloat(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], 1.0f, 0);
-                        vdb.addVoxelFloat(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], (float)df, 1);
+                        densityLayerPtr->addVoxel(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], 1.0f);
+                        sdfLayerPtr->addVoxel(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], df);
                     }
                 }
             }
         }
     }
-    vdb.stopTimeLogging();
     vdb.saveToFile("julia_revolute.vdb");
-    vdb.printStats();
 }
 #endif
 
@@ -92,43 +86,39 @@ int main() {
     const double  D_SIZE    = (double)SIZE;
     const int32_t OFFSET    = SIZE;
     const float   Z_SCALE   = 0.5f;
-    const int32_t FRAMES    = 1;
+    const int32_t FRAMES    = 10;
     const float   len_ratio = 1.0f / (SIZE * SIZE);
-    // vox::VoxWriter vox;
-    vdb::VdbWriter vdb;
-    vdb.addLayer(0, "density");
-    vdb.addLayer(1, "red");
-    vdb.addLayer(2, "green");
-    vdb.addLayer(3, "blue");
-    vdb.setKeyFrameTimeLoggingFunctor([](const vdb::KeyFrame& vKeyFrame, const double& vValue) {  //
-        std::cout << "Elapsed time for Frame " << vKeyFrame << " : " << vValue << " secs" << std::endl;
-    });
-    vdb.startTimeLogging();
-    float time = 0.0f;
+    vdb::VDBWriter          vdb;
+    float                   time        = 0.0f;
+    std::array<float, 3>    colorF      = {120.0f, 240.8f, 20.2f};
     for (int32_t f = 0; f < FRAMES; ++f) {
         vdb.setKeyFrame(f);
+        auto* floatLayerPtr = vdb.getFloatLayer(0, "density");
+        auto* vec3sLayerPtr = vdb.getVec3sLayer(1, "color");
         for (int32_t i = -SIZE; i < SIZE; ++i) {
             for (int32_t j = -SIZE; j < SIZE; ++j) {
                 float   len        = (i * i + j * j) * len_ratio;
                 int32_t pz         = (int32_t)((std::sin(len * 10.0 + time) * 0.5 + 0.5) * (std::abs(50.0f - 25.0f * len)) * Z_SCALE);
                 int32_t cube_color = (int32_t)(len * 100.0) % 255 + 1;
-                vdb.addVoxelFloat(i + SIZE, j + SIZE, pz, 1.0f, 0);
-                vdb.addVoxelFloat(i + SIZE, j + SIZE, pz, (sin(len * 10.0) * 0.5f + 0.5f) * 0.2f, 1);
-                vdb.addVoxelFloat(i + SIZE, j + SIZE, pz, (sin(len * 7.0) * 0.5f + 0.5f) * 0.8f, 2);
-                vdb.addVoxelFloat(i + SIZE, j + SIZE, pz, (sin(len * 5.0) * 0.5f + 0.5f) * 0.1f, 3);
+                auto    px         = i + SIZE;
+                auto    py         = j + SIZE;
+                floatLayerPtr->addVoxel(px, py, pz, 1.0f);
+                float r  = sin(len * 10.0f) * 0.5f + 0.5f;
+                float g = sin(len * 7.0f) * 0.5f + 0.5f;
+                float b  = sin(len * 5.0f) * 0.5f + 0.5f;
+                vec3sLayerPtr->addVoxel(px, py, pz, r, g, b);
             }
         }
         time += 0.5f;
     }
-    vdb.stopTimeLogging();
     vdb.saveToFile("wave.vdb");
-    vdb.printStats();
 }
 #endif
 
 #ifdef USE_VDB_WRITER
 int main() {
-    vdb::VdbWriter vdb;
+    vdb::VDBWriter vdb;
+    auto*          floatLayerPtr = vdb.getFloatLayer(0, "density");
     const uint32_t R = 128;
     const uint32_t D = R * 2;
     for (uint32_t z = 0; z < D; ++z) {
@@ -139,10 +129,10 @@ int main() {
                 const auto& pz             = z - R;
                 const auto& length_squared = px * px + py * py + pz * pz;
                 if (length_squared < R * R) {
-                    vdb.addVoxelFloat(x, y, z, 1.0f);
-                    float fx = (float)px;
-                    float fy = (float)py;
-                    float fz = (float)pz;
+                    floatLayerPtr->addVoxel(x, y, z, 1.0f);
+                    float       fx  = (float)px;
+                    float       fy  = (float)py;
+                    float       fz  = (float)pz;
                     const auto& len = sqrtf(fx * fx + fy * fy + fz * fz);
                     fx /= len;
                     fy /= len;

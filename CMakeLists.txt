@@ -15,5 +15,5 @@ endif()
 
 add_definitions(-std=c++11)
 
-add_executable(${PROJECT} main.cpp VdbWriter.cpp VdbWriter.h)
+add_executable(${PROJECT} main.cpp VDBWriter.hpp)
 
