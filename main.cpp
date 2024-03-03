@@ -3,9 +3,44 @@
 #include <chrono>    // std::chrono
 #include <iostream>  // std::cout
 
-#define JULIA_REVOLUTE
-//#define USE_ANIMATED_WAVE
-//#define USE_VDB_WRITER
+#define USE_ANIMATED_WAVE
+// #define JULIA_REVOLUTE
+// #define USE_VDB_WRITER
+
+#ifdef USE_ANIMATED_WAVE
+int main() {
+    const int32_t  SIZE      = 150;
+    const double   D_SIZE    = (double)SIZE;
+    const int32_t  OFFSET    = SIZE;
+    const float    Z_SCALE   = 0.5f;
+    const int32_t  FRAMES    = 10;
+    const float    len_ratio = 1.0f / (SIZE * SIZE);
+    vdb::VDBWriter vdb;
+    float          r, g, b;
+    float          time = 0.0f;
+    for (int32_t f = 0; f < FRAMES; ++f) {
+        vdb.setKeyFrame(f);
+        auto* floatLayerPtr = vdb.getFloatLayer(0, "density");
+        auto* vec3sLayerPtr = vdb.getVec3sLayer(1, "color");
+        for (int32_t i = -SIZE; i < SIZE; ++i) {
+            for (int32_t j = -SIZE; j < SIZE; ++j) {
+                float   len        = (i * i + j * j) * len_ratio;
+                int32_t pz         = (int32_t)((std::sin(len * 10.0 + time) * 0.5 + 0.5) * (std::abs(50.0f - 25.0f * len)) * Z_SCALE);
+                int32_t cube_color = (int32_t)(len * 100.0) % 255 + 1;
+                auto    px         = i + SIZE;
+                auto    py         = j + SIZE;
+                floatLayerPtr->addVoxel(px, py, pz, 1.0f);
+                r = sin(len * 10.0f) * 0.5f + 0.5f;
+                g = sin(len * 7.0f) * 0.5f + 0.5f;
+                b = sin(len * 5.0f) * 0.5f + 0.5f;
+                vec3sLayerPtr->addVoxel(px, py, pz, r, g, b);
+            }
+        }
+        time += 0.5f;
+    }
+    vdb.saveToFile("wave.vdb");
+}
+#endif
 
 #ifdef JULIA_REVOLUTE
 static double mix(const double& x, const double& y, const double& a) { return x * (1.0 - a) + y * a; }
@@ -23,8 +58,8 @@ int           main() {
     std::array<int32_t, 3> offset       = {};
     bool                   first_offset = true;
     vdb::VDBWriter         vdb;
-    int32_t cube_color;
-    double  time_step = 6.28318 / (double)FRAMES;
+    int32_t                cube_color;
+    double                 time_step = 6.28318 / (double)FRAMES;
     for (int32_t f = 0; f < FRAMES; ++f) {
         vdb.setKeyFrame(f);
         auto* densityLayerPtr = vdb.getFloatLayer(0, "density");
@@ -80,47 +115,12 @@ int           main() {
 }
 #endif
 
-#ifdef USE_ANIMATED_WAVE
-int main() {
-    const int32_t SIZE      = 150;
-    const double  D_SIZE    = (double)SIZE;
-    const int32_t OFFSET    = SIZE;
-    const float   Z_SCALE   = 0.5f;
-    const int32_t FRAMES    = 10;
-    const float   len_ratio = 1.0f / (SIZE * SIZE);
-    vdb::VDBWriter          vdb;
-    float                   time        = 0.0f;
-    std::array<float, 3>    colorF      = {120.0f, 240.8f, 20.2f};
-    for (int32_t f = 0; f < FRAMES; ++f) {
-        vdb.setKeyFrame(f);
-        auto* floatLayerPtr = vdb.getFloatLayer(0, "density");
-        auto* vec3sLayerPtr = vdb.getVec3sLayer(1, "color");
-        for (int32_t i = -SIZE; i < SIZE; ++i) {
-            for (int32_t j = -SIZE; j < SIZE; ++j) {
-                float   len        = (i * i + j * j) * len_ratio;
-                int32_t pz         = (int32_t)((std::sin(len * 10.0 + time) * 0.5 + 0.5) * (std::abs(50.0f - 25.0f * len)) * Z_SCALE);
-                int32_t cube_color = (int32_t)(len * 100.0) % 255 + 1;
-                auto    px         = i + SIZE;
-                auto    py         = j + SIZE;
-                floatLayerPtr->addVoxel(px, py, pz, 1.0f);
-                float r  = sin(len * 10.0f) * 0.5f + 0.5f;
-                float g = sin(len * 7.0f) * 0.5f + 0.5f;
-                float b  = sin(len * 5.0f) * 0.5f + 0.5f;
-                vec3sLayerPtr->addVoxel(px, py, pz, r, g, b);
-            }
-        }
-        time += 0.5f;
-    }
-    vdb.saveToFile("wave.vdb");
-}
-#endif
-
 #ifdef USE_VDB_WRITER
 int main() {
     vdb::VDBWriter vdb;
     auto*          floatLayerPtr = vdb.getFloatLayer(0, "density");
-    const uint32_t R = 128;
-    const uint32_t D = R * 2;
+    const uint32_t R             = 128;
+    const uint32_t D             = R * 2;
     for (uint32_t z = 0; z < D; ++z) {
         for (uint32_t y = 0; y < D; ++y) {
             for (uint32_t x = 0; x < D; ++x) {
