@@ -3,6 +3,21 @@
 VdbWriter is a specific and limited writer for openvdb.
 
 He is based on https://github.com/jangafx/simple-vdb-writer
+
+## Features :
+
+* cpp11 minimal support
+* one header file only
+* dependency free (no openvdb dependencies)
+* can write multi layers format :
+  * float
+  * double
+  * vec3s
+  * vec3d
+  * vec3i
+  * vec3ui
+  * other format can be used by his template, but not sure if softwares can open it
+* can set the current frame for animation recording +> will save in many files
  
 ## App
 
