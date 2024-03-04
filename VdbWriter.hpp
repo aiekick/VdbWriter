@@ -106,36 +106,36 @@ inline void write_meta_vec3i(FILE* fp, const std::string& name, const std::array
 
 class ATree {
 protected:
-    dAABBCC     m_Volume;
+    dAABBCC m_Volume;
     std::string m_Name;
 
 protected:
     virtual bool addVoxel(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ, void* vDatas, const size_t& vByteSize, const size_t& vCount) = 0;
 
     static uint32_t getBitIndex4(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ) {
-        const auto& x         = vX & (uint32_t)(4096 - 1);
-        const auto& y         = vY & (uint32_t)(4096 - 1);
-        const auto& z         = vZ & (uint32_t)(4096 - 1);
-        uint32_t    idx_3d[3] = {x >> 7, y >> 7, z >> 7};
-        uint64_t    idx       = idx_3d[2] | (idx_3d[1] << 5) | (idx_3d[0] << 10);
+        const auto& x = vX & (uint32_t)(4096 - 1);
+        const auto& y = vY & (uint32_t)(4096 - 1);
+        const auto& z = vZ & (uint32_t)(4096 - 1);
+        uint32_t idx_3d[3] = {x >> 7, y >> 7, z >> 7};
+        uint64_t idx = idx_3d[2] | (idx_3d[1] << 5) | (idx_3d[0] << 10);
         return static_cast<uint32_t>(idx);
     }
 
     static uint32_t getBitIndex3(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ) {
-        const auto& x         = vX & (uint32_t)(128 - 1);
-        const auto& y         = vY & (uint32_t)(128 - 1);
-        const auto& z         = vZ & (uint32_t)(128 - 1);
-        uint32_t    idx_3d[3] = {x >> 3, y >> 3, z >> 3};
-        uint64_t    idx       = idx_3d[2] | (idx_3d[1] << 4) | (idx_3d[0] << 8);
+        const auto& x = vX & (uint32_t)(128 - 1);
+        const auto& y = vY & (uint32_t)(128 - 1);
+        const auto& z = vZ & (uint32_t)(128 - 1);
+        uint32_t idx_3d[3] = {x >> 3, y >> 3, z >> 3};
+        uint64_t idx = idx_3d[2] | (idx_3d[1] << 4) | (idx_3d[0] << 8);
         return static_cast<uint32_t>(idx);
     }
 
     static uint32_t getBitIndex0(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ) {
-        const auto& x         = vX & (uint32_t)(8 - 1);
-        const auto& y         = vY & (uint32_t)(8 - 1);
-        const auto& z         = vZ & (uint32_t)(8 - 1);
-        uint32_t    idx_3d[3] = {x >> 0, y >> 0, z >> 0};
-        uint64_t    idx       = idx_3d[2] | (idx_3d[1] << 3) | (idx_3d[0] << 6);
+        const auto& x = vX & (uint32_t)(8 - 1);
+        const auto& y = vY & (uint32_t)(8 - 1);
+        const auto& z = vZ & (uint32_t)(8 - 1);
+        uint32_t idx_3d[3] = {x >> 0, y >> 0, z >> 0};
+        uint64_t idx = idx_3d[2] | (idx_3d[1] << 3) | (idx_3d[0] << 6);
         return static_cast<uint32_t>(idx);
     }
 
@@ -159,17 +159,17 @@ template <typename TType, size_t TCount>
 class VdbTree : public ATree {
 private:
     struct Node3 {
-        uint64_t                  mask[8]   = {};
+        uint64_t mask[8] = {};
         std::array<TType, TCount> data[512] = {};  // data
     };
 
     struct Node4 {
-        uint64_t                  mask[64] = {};
+        uint64_t mask[64] = {};
         std::map<uint32_t, Node3> nodes;  // loc, node
     };
 
     struct Node5 {
-        uint64_t                  mask[512] = {};
+        uint64_t mask[512] = {};
         std::map<uint32_t, Node4> nodes;  // loc, node
     };
 
@@ -204,14 +204,14 @@ private:
             const auto& base_bit_4_idx = ((uint32_t)word5_idx++) * 64;
             for (; word5 != 0; word5 &= word5 - 1) {
                 const auto& bit_4_index = base_bit_4_idx + (uint32_t)count_trailing_zeros(word5);
-                auto&       nodes4Ref   = nodes5Ref.nodes.at(bit_4_index);
+                auto& nodes4Ref = nodes5Ref.nodes.at(bit_4_index);
                 writeNode4EmptyHeader(fp, &nodes4Ref);
                 size_t word4_idx = 0;
                 for (auto word4 : nodes4Ref.mask) {
                     const auto& base_bit_3_idx = ((uint32_t)word4_idx++) * 64;
                     for (; word4 != 0; word4 &= word4 - 1) {
                         const auto& bit_3_index = base_bit_3_idx + (uint32_t)count_trailing_zeros(word4);
-                        const auto& nodes3Ref   = nodes4Ref.nodes.at(bit_3_index);
+                        const auto& nodes3Ref = nodes4Ref.nodes.at(bit_3_index);
                         write_data_arr<uint64_t>(fp, nodes3Ref.mask, 8);
                     }
                 }
@@ -222,13 +222,13 @@ private:
             const auto& base_bit_4_idx = ((uint32_t)word5_idx++) * 64;
             for (; word5 != 0; word5 &= word5 - 1) {
                 const auto& bit_4_index = base_bit_4_idx + (uint32_t)count_trailing_zeros(word5);
-                const auto& nodes4Ref   = nodes5Ref.nodes.at(bit_4_index);
-                size_t      word4_idx   = 0;
+                const auto& nodes4Ref = nodes5Ref.nodes.at(bit_4_index);
+                size_t word4_idx = 0;
                 for (auto word4 : nodes4Ref.mask) {
                     const auto& base_bit_3_idx = ((uint32_t)word4_idx++) * 64;
                     for (; word4 != 0; word4 &= word4 - 1) {
                         const auto& bit_3_index = base_bit_3_idx + (uint32_t)count_trailing_zeros(word4);
-                        const auto& nodes3Ref   = nodes4Ref.nodes.at(bit_3_index);
+                        const auto& nodes3Ref = nodes4Ref.nodes.at(bit_3_index);
                         write_data_arr<uint64_t>(fp, nodes3Ref.mask, 8);
                         write_data<uint8_t>(fp, 6);
                         write_data_arr<std::array<TType, TCount>>(fp, nodes3Ref.data, 512);
@@ -297,8 +297,8 @@ public:
             const auto& bit_index_4 = getBitIndex4(vX, vY, vZ);
             const auto& bit_index_3 = getBitIndex3(vX, vY, vZ);
             const auto& bit_index_0 = getBitIndex0(vX, vY, vZ);
-            auto&       nodes4Ref   = m_Nodes.nodes[bit_index_4];
-            auto&       nodes3Ref   = nodes4Ref.nodes[bit_index_3];
+            auto& nodes4Ref = m_Nodes.nodes[bit_index_4];
+            auto& nodes3Ref = nodes4Ref.nodes[bit_index_3];
             m_Nodes.mask[bit_index_4 >> 6] |= static_cast<uint64_t>(1) << (bit_index_4 & (64 - 1));    // active the voxel 4
             nodes4Ref.mask[bit_index_3 >> 6] |= static_cast<uint64_t>(1) << (bit_index_3 & (64 - 1));  // active the voxel 3
             nodes3Ref.mask[bit_index_0 >> 6] |= static_cast<uint64_t>(1) << (bit_index_0 & (64 - 1));  // active the voxel 0
@@ -402,9 +402,9 @@ typedef uint32_t LayerId;
 class VdbWriter {
 private:
     std::unordered_map<KeyFrame, std::unordered_map<LayerId, std::unique_ptr<ATree>>> m_Trees;
-    KeyFrame                                                                          m_CurrentKeyFrame = 0U;
-    FILE*                                                                             m_File            = nullptr;
-    int32_t                                                                           m_LastError       = 0;
+    KeyFrame m_CurrentKeyFrame = 0U;
+    FILE* m_File = nullptr;
+    int32_t m_LastError = 0;
 
 public:
     template <typename TTtree>
@@ -422,8 +422,8 @@ public:
         if (!vFilePathName.empty()) {
             auto dot_p = vFilePathName.find_last_of('.');
             if (dot_p != std::string::npos) {
-                auto   base_file_path_name = vFilePathName.substr(0, dot_p);
-                size_t idx                 = 1;
+                auto base_file_path_name = vFilePathName.substr(0, dot_p);
+                size_t idx = 1;
                 for (auto& vdb : m_Trees) {
                     std::stringstream str;
                     if (m_Trees.size() > 1) {
@@ -443,11 +443,11 @@ public:
     }
 
     // common grid types
-    VdbFloatGrid*  getFloatLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbFloatGrid>(vLayerId, vLayerName); }
+    VdbFloatGrid* getFloatLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbFloatGrid>(vLayerId, vLayerName); }
     VdbDoubleGrid* getDoubleLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbDoubleGrid>(vLayerId, vLayerName); }
-    VdbVec3sGrid*  getVec3sLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3sGrid>(vLayerId, vLayerName); }
-    VdbVec3dGrid*  getVec3dLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3dGrid>(vLayerId, vLayerName); }
-    VdbVec3iGrid*  getVec3iLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3iGrid>(vLayerId, vLayerName); }
+    VdbVec3sGrid* getVec3sLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3sGrid>(vLayerId, vLayerName); }
+    VdbVec3dGrid* getVec3dLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3dGrid>(vLayerId, vLayerName); }
+    VdbVec3iGrid* getVec3iLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3iGrid>(vLayerId, vLayerName); }
     VdbVec3uiGrid* getVec3uiLayer(const uint32_t& vLayerId, const std::string& vLayerName) { return getLayer<VdbVec3uiGrid>(vLayerId, vLayerName); }
 
 private:
@@ -470,7 +470,7 @@ private:
 #if _MSC_VER
         m_LastError = fopen_s(&m_File, vFilePathName.c_str(), "wb");
 #else
-        m_File      = fopen(vFilePathName.c_str(), "wb");
+        m_File = fopen(vFilePathName.c_str(), "wb");
         m_LastError = m_File ? 0 : errno;
 #endif
         return (m_LastError == 0);
