@@ -1,0 +1,24 @@
+name: Linux
+
+on:
+  push:
+    branches:
+    - master
+    paths-ignore:
+    - 'cmake/**'
+    - '.github/**'
+    - 'doc/**'
+    - 'samples/**'
+
+jobs:      
+  App_Linux_Boost_FS:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: master
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release
+    - name: build
+      run: cmake --build build --config Release
+      

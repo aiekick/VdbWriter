@@ -47,12 +47,12 @@ public:
 
 public:
     void combine(const dVec3& vPoint) {
-        lowerBound.x = mini<double>(lowerBound.x, vPoint.x);
-        lowerBound.y = mini<double>(lowerBound.y, vPoint.y);
-        lowerBound.z = mini<double>(lowerBound.z, vPoint.z);
-        upperBound.x = maxi<double>(upperBound.x, vPoint.x);
-        upperBound.y = maxi<double>(upperBound.y, vPoint.y);
-        upperBound.z = maxi<double>(upperBound.z, vPoint.z);
+        lowerBound.x = mini(lowerBound.x, vPoint.x);
+        lowerBound.y = mini(lowerBound.y, vPoint.y);
+        lowerBound.z = mini(lowerBound.z, vPoint.z);
+        upperBound.x = maxi(upperBound.x, vPoint.x);
+        upperBound.y = maxi(upperBound.y, vPoint.y);
+        upperBound.z = maxi(upperBound.z, vPoint.z);
     }
 
     [[nodiscard]] dVec3 GetCenter() const { return (lowerBound + upperBound) * 0.5; }
@@ -112,31 +112,31 @@ protected:
 protected:
     virtual bool addVoxel(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ, void* vDatas, const size_t& vByteSize, const size_t& vCount) = 0;
 
-    static uint32_t getBitIndex4(uint32_t x, uint32_t y, uint32_t z) {
-        x &= (uint32_t)(4096 - 1);
-        y &= (uint32_t)(4096 - 1);
-        z &= (uint32_t)(4096 - 1);
-        uint32_t idx_3d[3] = {x >> 7, y >> 7, z >> 7};
-        uint64_t idx       = idx_3d[2] | (idx_3d[1] << 5) | (idx_3d[0] << 10);
-        return (uint32_t)idx;
+    static uint32_t getBitIndex4(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ) {
+        const auto& x         = vX & (uint32_t)(4096 - 1);
+        const auto& y         = vY & (uint32_t)(4096 - 1);
+        const auto& z         = vZ & (uint32_t)(4096 - 1);
+        uint32_t    idx_3d[3] = {x >> 7, y >> 7, z >> 7};
+        uint64_t    idx       = idx_3d[2] | (idx_3d[1] << 5) | (idx_3d[0] << 10);
+        return static_cast<uint32_t>(idx);
     }
 
-    static uint32_t getBitIndex3(uint32_t x, uint32_t y, uint32_t z) {
-        x &= (uint32_t)(128 - 1);
-        y &= (uint32_t)(128 - 1);
-        z &= (uint32_t)(128 - 1);
-        uint32_t idx_3d[3] = {x >> 3, y >> 3, z >> 3};
-        uint64_t idx       = idx_3d[2] | (idx_3d[1] << 4) | (idx_3d[0] << 8);
-        return (uint32_t)idx;
+    static uint32_t getBitIndex3(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ) {
+        const auto& x         = vX & (uint32_t)(128 - 1);
+        const auto& y         = vY & (uint32_t)(128 - 1);
+        const auto& z         = vZ & (uint32_t)(128 - 1);
+        uint32_t    idx_3d[3] = {x >> 3, y >> 3, z >> 3};
+        uint64_t    idx       = idx_3d[2] | (idx_3d[1] << 4) | (idx_3d[0] << 8);
+        return static_cast<uint32_t>(idx);
     }
 
-    static uint32_t getBitIndex0(uint32_t x, uint32_t y, uint32_t z) {
-        x &= (uint32_t)(8 - 1);
-        y &= (uint32_t)(8 - 1);
-        z &= (uint32_t)(8 - 1);
-        uint32_t idx_3d[3] = {x >> 0, y >> 0, z >> 0};
-        uint64_t idx       = idx_3d[2] | (idx_3d[1] << 3) | (idx_3d[0] << 6);
-        return (uint32_t)idx;
+    static uint32_t getBitIndex0(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ) {
+        const auto& x         = vX & (uint32_t)(8 - 1);
+        const auto& y         = vY & (uint32_t)(8 - 1);
+        const auto& z         = vZ & (uint32_t)(8 - 1);
+        uint32_t    idx_3d[3] = {x >> 0, y >> 0, z >> 0};
+        uint64_t    idx       = idx_3d[2] | (idx_3d[1] << 3) | (idx_3d[0] << 6);
+        return static_cast<uint32_t>(idx);
     }
 
     static int32_t count_trailing_zeros(uint64_t value) {
@@ -173,7 +173,7 @@ private:
         std::map<uint32_t, Node4> nodes;  // loc, node
     };
 
-    void writeNode4Header(FILE* fp, Node4* node) {
+    void writeNode4EmptyHeader(FILE* fp, Node4* node) {
         write_data_arr<uint64_t>(fp, node->mask, 64);
         static std::vector<uint64_t> mask_arr_uint64_empty(64);  // we dont use a std::array for not increase the bin size
         write_data_arr<uint64_t>(fp, mask_arr_uint64_empty.data(), mask_arr_uint64_empty.size());
@@ -182,7 +182,7 @@ private:
         write_data_arr<float>(fp, mask_arr_float_empty.data(), mask_arr_float_empty.size());
     }
 
-    void writeNode5Header(FILE* fp, Node5* node) {
+    void writeNode5EmptyHeader(FILE* fp, Node5* node) {
         write_vec3i(fp, {0, 0, 0});
         write_data_arr<uint64_t>(fp, node->mask, 512);
         static std::vector<uint64_t> mask_arr_uint64_empty(512);  // we dont use a std::array for not increase the bin size
@@ -198,14 +198,14 @@ private:
         write_data<uint32_t>(fp, 0);
         write_data<uint32_t>(fp, 1);
         auto& nodes5Ref = m_Nodes;
-        writeNode5Header(fp, &nodes5Ref);
+        writeNode5EmptyHeader(fp, &nodes5Ref);
         size_t word5_idx = 0;
         for (auto word5 : nodes5Ref.mask) {
             const auto& base_bit_4_idx = ((uint32_t)word5_idx++) * 64;
             for (; word5 != 0; word5 &= word5 - 1) {
                 const auto& bit_4_index = base_bit_4_idx + (uint32_t)count_trailing_zeros(word5);
                 auto&       nodes4Ref   = nodes5Ref.nodes.at(bit_4_index);
-                writeNode4Header(fp, &nodes4Ref);
+                writeNode4EmptyHeader(fp, &nodes4Ref);
                 size_t word4_idx = 0;
                 for (auto word4 : nodes4Ref.mask) {
                     const auto& base_bit_3_idx = ((uint32_t)word4_idx++) * 64;
@@ -299,9 +299,9 @@ public:
             const auto& bit_index_0 = getBitIndex0(vX, vY, vZ);
             auto&       nodes4Ref   = m_Nodes.nodes[bit_index_4];
             auto&       nodes3Ref   = nodes4Ref.nodes[bit_index_3];
-            m_Nodes.mask[bit_index_4 >> 6] |= static_cast<uint64_t>(1) << (bit_index_4 & (64 - 1));
-            nodes4Ref.mask[bit_index_3 >> 6] |= static_cast<uint64_t>(1) << (bit_index_3 & (64 - 1));
-            nodes3Ref.mask[bit_index_0 >> 6] |= static_cast<uint64_t>(1) << (bit_index_0 & (64 - 1));
+            m_Nodes.mask[bit_index_4 >> 6] |= static_cast<uint64_t>(1) << (bit_index_4 & (64 - 1));    // active the voxel 4
+            nodes4Ref.mask[bit_index_3 >> 6] |= static_cast<uint64_t>(1) << (bit_index_3 & (64 - 1));  // active the voxel 3
+            nodes3Ref.mask[bit_index_0 >> 6] |= static_cast<uint64_t>(1) << (bit_index_0 & (64 - 1));  // active the voxel 0
             memcpy(&nodes3Ref.data[bit_index_0], vDatas, vByteSize * vCount);
             return true;
         }
@@ -399,7 +399,7 @@ inline std::string VdbVec3uiGrid::getTypeName() {
 typedef uint32_t KeyFrame;
 typedef uint32_t LayerId;
 
-class VDBWriter {
+class VdbWriter {
 private:
     std::unordered_map<KeyFrame, std::unordered_map<LayerId, std::unique_ptr<ATree>>> m_Trees;
     KeyFrame                                                                          m_CurrentKeyFrame = 0U;

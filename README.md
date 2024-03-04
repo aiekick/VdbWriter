@@ -24,7 +24,7 @@ He is based on https://github.com/jangafx/simple-vdb-writer
 the main.cpp file show you how to generate a quick file :
 
 ```cpp
-#include "VDBWriter.h"
+#include "VdbWriter.h"
 int main() {
     const int32_t  SIZE      = 150;
     const double   D_SIZE    = (double)SIZE;
@@ -32,7 +32,7 @@ int main() {
     const float    Z_SCALE   = 0.5f;
     const int32_t  FRAMES    = 10;
     const float    len_ratio = 1.0f / (SIZE * SIZE);
-    vdb::VDBWriter vdb;
+    vdb::VdbWriter vdb;
     float          r, g, b;
     float          time = 0.0f;
     for (int32_t f = 0; f < FRAMES; ++f) {

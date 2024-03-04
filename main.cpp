@@ -1,11 +1,11 @@
-#include "VDBWriter.hpp"
+#include "VdbWriter.hpp"
 #include <cstdint>   // int32_t
 #include <chrono>    // std::chrono
 #include <iostream>  // std::cout
 
 #define USE_ANIMATED_WAVE
 // #define JULIA_REVOLUTE
-// #define USE_VDB_WRITER
+// #define USE_Vdb_WRITER
 
 #ifdef USE_ANIMATED_WAVE
 int main() {
@@ -15,7 +15,7 @@ int main() {
     const float    Z_SCALE   = 0.5f;
     const int32_t  FRAMES    = 10;
     const float    len_ratio = 1.0f / (SIZE * SIZE);
-    vdb::VDBWriter vdb;
+    vdb::VdbWriter vdb;
     float          r, g, b;
     float          time = 0.0f;
     for (int32_t f = 0; f < FRAMES; ++f) {
@@ -57,7 +57,7 @@ int           main() {
 
     std::array<int32_t, 3> offset       = {};
     bool                   first_offset = true;
-    vdb::VDBWriter         vdb;
+    vdb::VdbWriter         vdb;
     int32_t                cube_color;
     double                 time_step = 6.28318 / (double)FRAMES;
     for (int32_t f = 0; f < FRAMES; ++f) {
@@ -115,9 +115,9 @@ int           main() {
 }
 #endif
 
-#ifdef USE_VDB_WRITER
+#ifdef USE_Vdb_WRITER
 int main() {
-    vdb::VDBWriter vdb;
+    vdb::VdbWriter vdb;
     auto*          floatLayerPtr = vdb.getFloatLayer(0, "density");
     const uint32_t R             = 128;
     const uint32_t D             = R * 2;
