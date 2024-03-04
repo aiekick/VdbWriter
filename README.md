@@ -1,3 +1,7 @@
+[![Windows](https://github.com/aiekick/VdbWriter/actions/workflows/Win.yml/badge.svg)](https://github.com/aiekick/VdbWriter/actions/workflows/Win.yml)
+[![Linux](https://github.com/aiekick/VdbWriter/actions/workflows/Linux.yml/badge.svg)](https://github.com/aiekick/VdbWriter/actions/workflows/Linux.yml)
+[![Macos](https://github.com/aiekick/VdbWriter/actions/workflows/Osx.yml/badge.svg)](https://github.com/aiekick/VdbWriter/actions/workflows/Osx.yml)
+
 # VdbWriter
 
 VdbWriter is a specific and limited writer for openvdb.
@@ -6,6 +10,7 @@ He is based on https://github.com/jangafx/simple-vdb-writer
 
 ## Features :
 
+* cross platform : Win / Linux / Macos
 * cpp11 minimal support
 * one header file only
 * dependency free (no openvdb dependencies)
