@@ -291,7 +291,7 @@ public:
     VdbTree(const std::string& vName) : ATree(vName) {}
     virtual ~VdbTree() = default;
 
-    bool addVoxel(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ, void* vDatas, const size_t& vByteSize, const size_t& vCount) override {
+    bool addVoxel(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ, void* vDatas, const size_t& vByteSize, const size_t& vCount) override final {
         if (vDatas != nullptr && vByteSize == sizeof(TType) && vCount == TCount) {
             m_Volume.combine(dVec3((float)vX, (float)vY, (float)vZ));
             const auto& bit_index_4 = getBitIndex4(vX, vY, vZ);
@@ -349,6 +349,7 @@ template <>
 inline std::string VdbFloatGrid::getTypeName() {
     return "Tree_float_5_4_3";
 }
+
 typedef VdbScalarGrid<double> VdbDoubleGrid;
 template <>
 inline std::string VdbDoubleGrid::getTypeName() {
@@ -368,7 +369,7 @@ public:
     VdbVec3Grid(const std::string& vName) : VdbTree<TType, 3>(vName) {}
     virtual ~VdbVec3Grid() = default;
     bool addVoxel(const uint32_t& vX, const uint32_t& vY, const uint32_t& vZ, const TType& v0, const TType& v1, const TType& v2) {
-        return VdbTree<TType, 3>::addVoxel(vX, vY, vZ, std::array<TType, 3>{v0, v1, v2});
+        return VdbTree<TType, 3>::addVoxel(vX, vY, vZ, {v0, v1, v2});
     }
 };
 

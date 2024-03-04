@@ -4,15 +4,13 @@
 #include <chrono>    // std::chrono
 #include <cmath>     // sin
 
-#define USE_ANIMATED_WAVE
-// #define JULIA_REVOLUTE
+//#define USE_ANIMATED_WAVE
+ #define JULIA_REVOLUTE
 // #define USE_Vdb_WRITER
 
 #ifdef USE_ANIMATED_WAVE
 int main() {
     const int32_t SIZE = 150;
-    const double D_SIZE = (double)SIZE;
-    const int32_t OFFSET = SIZE;
     const float Z_SCALE = 0.5f;
     const int32_t FRAMES = 10;
     const float len_ratio = 1.0f / (SIZE * SIZE);
@@ -27,7 +25,6 @@ int main() {
             for (int32_t j = -SIZE; j < SIZE; ++j) {
                 float len = (i * i + j * j) * len_ratio;
                 int32_t pz = (int32_t)((std::sin(len * 10.0 + time) * 0.5 + 0.5) * (std::abs(50.0f - 25.0f * len)) * Z_SCALE);
-                int32_t cube_color = (int32_t)(len * 100.0) % 255 + 1;
                 auto px = i + SIZE;
                 auto py = j + SIZE;
                 floatLayerPtr->addVoxel(px, py, pz, 1.0f);
@@ -59,7 +56,6 @@ int main() {
     std::array<int32_t, 3> offset = {};
     bool first_offset = true;
     vdb::VdbWriter vdb;
-    int32_t cube_color;
     double time_step = 6.28318 / (double)FRAMES;
     for (int32_t f = 0; f < FRAMES; ++f) {
         vdb.setKeyFrame(f);
@@ -104,7 +100,6 @@ int main() {
                             offset[1] = k;
                             offset[2] = j;
                         }
-                        cube_color = (int32_t)((std::sin(rev_x + rev_y) * 0.5 + 0.5) * 6.0) + 249;
                         densityLayerPtr->addVoxel(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], 1.0f);
                         sdfLayerPtr->addVoxel(i + SIZE - offset[0], k + SIZE - offset[1], j + SIZE - offset[2], df);
                     }
